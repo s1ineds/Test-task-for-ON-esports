@@ -157,7 +157,7 @@ func (d *DBot) SendWeatherMessage(s *discordgo.Session, m *discordgo.MessageCrea
 
 		go d.getHelp(msgChan)
 		helpMessage := <-msgChan
-		d.sendMessage(s, m.ChannelID, helpMessage)
+		d.sendTextMessage(s, m.ChannelID, helpMessage)
 	}
 
 	// Если комада содержит !w, значит мы хотим погоду.
@@ -170,12 +170,23 @@ func (d *DBot) SendWeatherMessage(s *discordgo.Session, m *discordgo.MessageCrea
 	// Если команда содержит !f, значит мы хотим прогноз на пять дней.
 	if strings.Contains(m.Content, "!f") {
 		d.GetForecast(m.Content[2:])
-		d.sendMessage(s, m.ChannelID, d.generateForecastMessage())
+		forecastMessages := d.generateForecastMessage()
+		for _, msg := range forecastMessages {
+			d.sendMessage(s, m.ChannelID, msg)
+		}
 	}
 }
 
-// Метод, который отправляет сообщения.
-func (d *DBot) sendMessage(s *discordgo.Session, chanId, message string) {
+// Метод, который отправляет форматированные сообщения.
+func (d *DBot) sendMessage(s *discordgo.Session, chanId string, message *discordgo.MessageEmbed) {
+	_, err := s.ChannelMessageSendEmbed(chanId, message)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+// Метод, который отправляет текстовые сообщения.
+func (d *DBot) sendTextMessage(s *discordgo.Session, chanId, message string) {
 	_, err := s.ChannelMessageSend(chanId, message)
 	if err != nil {
 		log.Println(err)
@@ -183,39 +194,100 @@ func (d *DBot) sendMessage(s *discordgo.Session, chanId, message string) {
 }
 
 // Метод, который генерирует сообщение для отправки.
-func (d *DBot) generateWeatherMessage() string {
-	tNow := time.Now()
-	formattedDate := fmt.Sprintf("%d %s %d", tNow.Year(), tNow.Month(), tNow.Day())
+func (d *DBot) generateWeatherMessage() *discordgo.MessageEmbed {
 
-	messageToSend := "Today's date: " + formattedDate + "\n" +
-		"City: " + messageObject.Name + "\n" +
-		"Country: " + messageObject.Country + "\n" +
-		"State: " + messageObject.State + "\n" +
-		"Weather description: " + messageObject.WeatherDescription + "\n" +
-		"Temperature: " + fmt.Sprintf("%.0f", messageObject.Temperature) + "\n" +
-		"Feels like: " + fmt.Sprintf("%.0f", messageObject.FeelsLike) + "\n" +
-		"Pressure: " + fmt.Sprintf("%d", messageObject.Pressure) + "\n" +
-		"Humidity: " + fmt.Sprintf("%d", messageObject.Humidity) + "\n" +
-		"WindSpeed: " + fmt.Sprintf("%.0f", messageObject.WindSpeed) + " m/s" + "\n" +
-		"Sunrise: " + messageObject.Sunrise + "\n" +
-		"Sunset: " + messageObject.Sunset + "\n"
+	embed := discordgo.MessageEmbed{
+		Type:        discordgo.EmbedTypeRich,
+		Title:       messageObject.Name,
+		Description: messageObject.State,
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name:   "Conditions",
+				Value:  messageObject.WeatherDescription,
+				Inline: true,
+			},
+			{
+				Name:   "Temperature",
+				Value:  fmt.Sprintf("%.0f", messageObject.Temperature),
+				Inline: true,
+			},
+			{
+				Name:   "Feels Like",
+				Value:  fmt.Sprintf("%.0f", messageObject.FeelsLike),
+				Inline: true,
+			},
+			{
+				Name:   "Pressure",
+				Value:  fmt.Sprintf("%d", messageObject.Pressure),
+				Inline: true,
+			},
+			{
+				Name:   "Humidity",
+				Value:  fmt.Sprintf("%d", messageObject.Humidity),
+				Inline: true,
+			},
+			{
+				Name:   "WindSpeed",
+				Value:  fmt.Sprintf("%.0f", messageObject.WindSpeed) + " m/s",
+				Inline: true,
+			},
+			{
+				Name:   "Sunrise",
+				Value:  messageObject.Sunrise,
+				Inline: true,
+			},
+			{
+				Name:   "Sunset",
+				Value:  messageObject.Sunset,
+				Inline: true,
+			},
+		},
+	}
 
-	return messageToSend
+	return &embed
 }
 
 // Метод, который генерирует сообщение для отправки прогноза на пять дней.
-func (d *DBot) generateForecastMessage() string {
-	var messageToSend string
+func (d *DBot) generateForecastMessage() []*discordgo.MessageEmbed {
+	var messageToSend []*discordgo.MessageEmbed
 
 	for i := 1; i < len(forecastHours); i += 8 {
-		messageToSend += "Date: " + forecastHours[i].Date + "\n" +
-			"Description: " + forecastHours[i].Description + "\n" +
-			"Temperature: " + fmt.Sprintf("%.0f", forecastHours[i].Temperature) + "\n" +
-			"Feels Like: " + fmt.Sprintf("%.0f", forecastHours[i].FeelsLike) + "\n" +
-			"Pressure: " + fmt.Sprintf("%d", forecastHours[i].Pressure) + "\n" +
-			"Humidity: " + fmt.Sprintf("%d", forecastHours[i].Humidity) + "\n" +
-			"Wind speed: " + fmt.Sprintf("%.0f", forecastHours[i].WindSpeed) + " m/s" + "\n" +
-			"\n" + "\n"
+		messageToSend = append(messageToSend, &discordgo.MessageEmbed{
+			Type:  discordgo.EmbedTypeRich,
+			Title: forecastHours[i].Date,
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:   "Conditions",
+					Value:  forecastHours[i].Description,
+					Inline: true,
+				},
+				{
+					Name:   "Temperature",
+					Value:  fmt.Sprintf("%.0f", forecastHours[i].Temperature),
+					Inline: true,
+				},
+				{
+					Name:   "Feels Like",
+					Value:  fmt.Sprintf("%.0f", forecastHours[i].FeelsLike),
+					Inline: true,
+				},
+				{
+					Name:   "Pressure",
+					Value:  fmt.Sprintf("%d", forecastHours[i].Pressure),
+					Inline: true,
+				},
+				{
+					Name:   "Humidity",
+					Value:  fmt.Sprintf("%d", forecastHours[i].Humidity),
+					Inline: true,
+				},
+				{
+					Name:   "WindSpeed",
+					Value:  fmt.Sprintf("%.0f", forecastHours[i].WindSpeed) + " m/s",
+					Inline: true,
+				},
+			},
+		})
 	}
 
 	return messageToSend
