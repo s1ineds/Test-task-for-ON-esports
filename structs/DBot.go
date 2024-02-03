@@ -99,6 +99,7 @@ func (d *DBot) GetWeather(city string) {
 	messageObject.Sunset = time.Unix(curWeather.Sys.Sunset, 0).Format("2006-01-02 15:04:05")
 }
 
+// Метод, который получает прогноз погоды на пять дней.
 func (d *DBot) GetForecast(city string) {
 	defer d.recoverFromPanic()
 
@@ -194,8 +195,8 @@ func (d *DBot) generateWeatherMessage() string {
 		"Temperature: " + fmt.Sprintf("%.0f", messageObject.Temperature) + "\n" +
 		"Feels like: " + fmt.Sprintf("%.0f", messageObject.FeelsLike) + "\n" +
 		"Pressure: " + fmt.Sprintf("%d", messageObject.Pressure) + "\n" +
-		"Humidity: " + fmt.Sprintf("%d", messageObject.Humidity) + "м/с" + "\n" +
-		"WindSpeed: " + fmt.Sprintf("%.0f", messageObject.WindSpeed) + "\n" +
+		"Humidity: " + fmt.Sprintf("%d", messageObject.Humidity) + "\n" +
+		"WindSpeed: " + fmt.Sprintf("%.0f", messageObject.WindSpeed) + " m/s" + "\n" +
 		"Sunrise: " + messageObject.Sunrise + "\n" +
 		"Sunset: " + messageObject.Sunset + "\n"
 
@@ -213,7 +214,7 @@ func (d *DBot) generateForecastMessage() string {
 			"Feels Like: " + fmt.Sprintf("%.0f", forecastHours[i].FeelsLike) + "\n" +
 			"Pressure: " + fmt.Sprintf("%d", forecastHours[i].Pressure) + "\n" +
 			"Humidity: " + fmt.Sprintf("%d", forecastHours[i].Humidity) + "\n" +
-			"Wind speed: " + fmt.Sprintf("%.0f", forecastHours[i].WindSpeed) + " м/с" + "\n" +
+			"Wind speed: " + fmt.Sprintf("%.0f", forecastHours[i].WindSpeed) + " m/s" + "\n" +
 			"\n" + "\n"
 	}
 
@@ -237,7 +238,7 @@ func (d *DBot) getHelp(msgChan chan string) {
 	msgChan <- string(bytes)
 }
 
-// Метод-психолог, для восстановления от паники.
+// Метод, для восстановления от паники.
 func (d *DBot) recoverFromPanic() {
 	if r := recover(); r != nil {
 		log.Println("RECOVERED! ", r)

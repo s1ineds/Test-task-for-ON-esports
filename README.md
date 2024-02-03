@@ -19,6 +19,8 @@ Weather Updates: On command, the bot fetches and displays current weather inform
 + Команда `!wAstana` - выдаст погоду на текущий день для города Астана.
 + Команда `!fAstana` - выдаст прогноз погоды на пять дней.
 
+Ссылка на канал `https://discord.gg/5CwZZwXf`.
+
 ## Скриншоты:
 ![FirstScreenshot](/images/1.png)
 ![SecondScreenshot](/images/2.png)
