@@ -12,7 +12,7 @@ Weather Updates: On command, the bot fetches and displays current weather inform
 `git clone https://github.com/s1ineds/Test-task-for-ON-esports.git`
 
 Затем переходим в каталог с проектом и выполняем команду:<br>
-`go run main.go MTIwMzIwMTAwNjUyODEwMjQ2MA.GCNo1Z.NoBJN-Q62Z6dWNYOF2kxJOtILvnSo9HYATExEo`
+`go run main.go`
 
 С ботом работать легко и просто.<br>
 + Команда `!help` - покажет справку.
