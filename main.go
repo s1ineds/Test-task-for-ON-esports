@@ -14,14 +14,10 @@ import (
 func main() {
 	dBot := structs.DBot{}
 
-	// // Токен бота здесь лучше предоставлять как параметр CLI.
-	// // Если токен не предоставлен, то и бот работать не будет.
-	// if os.Args[1] == "" {
-	// 	log.Fatal("Please specify bot token as command line parameter.")
-	//
+	// Получаем токен из файла.
+	token := getToken()
 
-	// Здесь токен получаем из аргументов CLI.
-	discord, err := discordgo.New("Bot " + getToken())
+	discord, err := discordgo.New("Bot " + token)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,9 +44,14 @@ func getToken() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	file.Close()
+	defer file.Close()
 
 	tokenBytes, err := io.ReadAll(file)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	return string(tokenBytes)
+	token := string(tokenBytes)
+
+	return token
 }

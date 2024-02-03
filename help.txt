@@ -1,3 +1,5 @@
 You can get the current weather information by sending "!wCountry_name" to bot.
 
 Example: !wAstana.
+
+Also you can get the five day weather forecast by typing: !fAstana.

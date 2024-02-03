@@ -20,5 +20,5 @@ Weather Updates: On command, the bot fetches and displays current weather inform
 + Команда `!fAstana` - выдаст прогноз погоды на пять дней.
 
 ## Скриншоты:
-![FirstScreenshot](https://imgur.com/exoi1wm)
-![SecondScreenshot](https://imgur.com/undefined)
+![FirstScreenshot](/images/1.png)
+![SecondScreenshot](/images/2.png)
