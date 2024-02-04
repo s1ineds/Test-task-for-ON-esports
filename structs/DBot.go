@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
@@ -18,6 +19,21 @@ var messageObject *CurrentWeatherMessage = &CurrentWeatherMessage{}
 
 // Глобальный список объектов, который представляет сообщение о прогнозе на пять дней.
 var forecastHours []*ForecastMessage
+
+// Переменная, которая определяет идет игра или нет
+var doGame bool = false
+
+// Ходы бота
+var botMoves []string = []string{"🪨", "✂️", "🧻"}
+
+// Счет человека-игрока
+var botPlayer int
+
+// Счет бота
+var humanPlayer int
+
+// Подсчет раундов. Должно быть три.
+var gameRounds int
 
 type DBot struct{}
 
@@ -164,7 +180,7 @@ func (d *DBot) SendWeatherMessage(s *discordgo.Session, m *discordgo.MessageCrea
 	if strings.Contains(m.Content, "!w") {
 		d.GetWeather(m.Content[2:])
 		weatherMessage := d.generateWeatherMessage()
-		d.sendMessage(s, m.ChannelID, weatherMessage)
+		d.sendEmbedMessage(s, m.ChannelID, weatherMessage)
 	}
 
 	// Если команда содержит !f, значит мы хотим прогноз на пять дней.
@@ -172,13 +188,96 @@ func (d *DBot) SendWeatherMessage(s *discordgo.Session, m *discordgo.MessageCrea
 		d.GetForecast(m.Content[2:])
 		forecastMessages := d.generateForecastMessage()
 		for _, msg := range forecastMessages {
-			d.sendMessage(s, m.ChannelID, msg)
+			d.sendEmbedMessage(s, m.ChannelID, msg)
 		}
+	}
+	// "✂️" "🪨" "🧻"
+	if strings.Contains(m.Content, "!gogame") || doGame {
+		doGame = true
+		d.rockPaperScissors(s, m)
+	}
+}
+
+// Игра "Камень, Ножницы, Бумага"
+func (d *DBot) rockPaperScissors(s *discordgo.Session, m *discordgo.MessageCreate) {
+	s.ChannelMessageSend(m.ChannelID, "Ready! Your move!")
+
+	if m.Content != "" && m.Content != "!gogame" {
+		gameRounds++
+
+		botChoose := rand.Intn(len(botMoves) - 1)
+
+		if m.Content == "🪨" {
+			bMove := botMoves[botChoose]
+			s.ChannelMessageSend(m.ChannelID, bMove)
+			switch bMove {
+			case "🧻":
+				botPlayer++
+			case "✂️":
+				humanPlayer++
+			}
+		}
+
+		if m.Content == "✂️" {
+			bMove := botMoves[botChoose]
+			s.ChannelMessageSend(m.ChannelID, bMove)
+			switch bMove {
+			case "🪨":
+				botPlayer++
+			case "🧻":
+				humanPlayer++
+			}
+		}
+
+		if m.Content == "🧻" {
+			bMove := botMoves[botChoose]
+			s.ChannelMessageSend(m.ChannelID, bMove)
+			switch bMove {
+			case "🪨":
+				humanPlayer++
+			case "✂️":
+				botPlayer++
+			}
+		}
+
+		if gameRounds == 3 {
+			if botPlayer == humanPlayer {
+				s.ChannelMessageSend(m.ChannelID, "Nobody won.")
+				msg := d.generateGameScoreMessage(botPlayer, humanPlayer)
+				d.sendEmbedMessage(s, m.ChannelID, msg)
+				gameRounds = 0
+				doGame = false
+				botPlayer = 0
+				humanPlayer = 0
+				return
+			}
+			if botPlayer > humanPlayer {
+				s.ChannelMessageSend(m.ChannelID, "Bot Win!")
+				msg := d.generateGameScoreMessage(botPlayer, humanPlayer)
+				d.sendEmbedMessage(s, m.ChannelID, msg)
+				gameRounds = 0
+				doGame = false
+				botPlayer = 0
+				humanPlayer = 0
+				return
+			} else {
+				s.ChannelMessageSend(m.ChannelID, "You Win!")
+				msg := d.generateGameScoreMessage(botPlayer, humanPlayer)
+				d.sendEmbedMessage(s, m.ChannelID, msg)
+				gameRounds = 0
+				doGame = false
+				botPlayer = 0
+				humanPlayer = 0
+				return
+			}
+		}
+	} else {
+		return
 	}
 }
 
 // Метод, который отправляет форматированные сообщения.
-func (d *DBot) sendMessage(s *discordgo.Session, chanId string, message *discordgo.MessageEmbed) {
+func (d *DBot) sendEmbedMessage(s *discordgo.Session, chanId string, message *discordgo.MessageEmbed) {
 	_, err := s.ChannelMessageSendEmbed(chanId, message)
 	if err != nil {
 		log.Println(err)
@@ -291,6 +390,27 @@ func (d *DBot) generateForecastMessage() []*discordgo.MessageEmbed {
 	}
 
 	return messageToSend
+}
+
+func (d *DBot) generateGameScoreMessage(bot, human int) *discordgo.MessageEmbed {
+	embed := discordgo.MessageEmbed{
+		Type:  discordgo.EmbedTypeRich,
+		Title: messageObject.Name,
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name:   "Bot Player",
+				Value:  fmt.Sprintf("%d", bot),
+				Inline: true,
+			},
+			{
+				Name:   "Human Player",
+				Value:  fmt.Sprintf("%d", human),
+				Inline: true,
+			},
+		},
+	}
+
+	return &embed
 }
 
 // Метод, который читает текстовый файл справки.
