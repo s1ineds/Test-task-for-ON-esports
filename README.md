@@ -23,6 +23,6 @@ Weather Updates: On command, the bot fetches and displays current weather inform
 Ссылка на канал `https://discord.gg/5CwZZwXf`.
 
 ## Скриншоты:
-![FirstScreenshot](/images/1.png)
-![SecondScreenshot](/images/2.png)
 ![ThirdScreenshot](/images/3.png)
+![SecondScreenshot](/images/2.png)
+![FirstScreenshot](/images/1.png)
