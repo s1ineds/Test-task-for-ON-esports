@@ -2,11 +2,9 @@
 
 ## Цель: 
 Разработать Discord бота на языке программирования Go.
-Выбранный вариант:<br>
-Weather Updates: On command, the bot fetches and displays current weather information for a specified location.
 
 ## Описание:
-Данный бот по командам выводит информацию о текущей погоде а так же, прогноз погоды на пять дней.
+Основной функционал заключается в том, что бот по командам выводит информацию о текущей погоде а так же, прогноз погоды на пять дней.
 
 Для запуска бота нужно клонировать репозиторий:<br>
 `git clone https://github.com/s1ineds/Test-task-for-ON-esports.git`
