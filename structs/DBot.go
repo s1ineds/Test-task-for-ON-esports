@@ -395,7 +395,7 @@ func (d *DBot) generateForecastMessage() []*discordgo.MessageEmbed {
 func (d *DBot) generateGameScoreMessage(bot, human int) *discordgo.MessageEmbed {
 	embed := discordgo.MessageEmbed{
 		Type:  discordgo.EmbedTypeRich,
-		Title: messageObject.Name,
+		Title: "Game Score",
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:   "Bot Player",
